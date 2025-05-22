@@ -8,8 +8,8 @@ echo "[+] Extracting o365beat..."
 tar -zxvf o365beat.tar.gz
 
 echo "[+] Moving o365beat to /opt/o365..."
-mv  o365beat  /opt/o365
-rm -rf  o365beat.tar.gz
+mv o365beat /opt/o365
+rm -rf o365beat.tar.gz
 
 echo "🔐 Fill the azure-o365-API Keys:"
 echo ""
@@ -19,9 +19,8 @@ read -rp "Enter O365BEAT_CLIENT_ID: " O365BEAT_CLIENT_ID
 read -rp "Enter O365BEAT_DIRECTORY_ID: " O365BEAT_DIRECTORY_ID
 
 # Confirm before continuing
-# Display inputs
 echo ""
-echo "🔐  azure-o365-API Keys"
+echo "🔐 azure-o365-API Keys"
 echo "----------------------"
 echo "O365BEAT_TENANT_DOMAIN = $O365BEAT_TENANT_DOMAIN"
 echo "O365BEAT_CLIENT_SECRET = $O365BEAT_CLIENT_SECRET"
@@ -37,7 +36,7 @@ fi
 
 # Write configuration file
 echo "[+] Writing configuration to /opt/o365/blucluster.conf..."
-sudo tee /opt/o365/blucluster.conf > /dev/null <<EOF
+tee /opt/o365/blucluster.conf > /dev/null <<EOF
 # o365 config
 
 O365BEAT_TENANT_DOMAIN="${O365BEAT_TENANT_DOMAIN}"
@@ -65,15 +64,15 @@ if [ ! -f "$SERVICE_FILE" ]; then
 fi
 
 echo "[+] Setting up systemd service..."
-sudo mv "$SERVICE_FILE" /etc/systemd/system/o365beat.service
+mv "$SERVICE_FILE" /etc/systemd/system/o365beat.service
 
 # Start and enable the service
 echo "[+] Starting o365beat service..."
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
-sudo systemctl enable o365beat.service
-sudo systemctl start o365beat.service
+systemctl daemon-reexec
+systemctl daemon-reload
+systemctl enable o365beat.service
+systemctl start o365beat.service
 
-echo "✅ o365beat installation and setup complete...
+echo "✅ o365beat installation and setup complete..."
 echo ""
 echo "azure-o365 logs output port..12224🎯"
