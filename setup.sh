@@ -8,8 +8,8 @@ echo "[+] Extracting o365beat..."
 tar -zxvf o365beat.tar.gz
 
 echo "[+] Moving o365beat to /opt/o365..."
-mv opt/o365beat  /opt/o365
-rm -rf opt o365beat.tar.gz
+mv  o365beat  /opt/o365
+rm -rf  o365beat.tar.gz
 
 echo "🔐 Fill the azure-o365-API Keys:"
 echo ""
@@ -76,4 +76,4 @@ sudo systemctl start o365beat.service
 
 echo "✅ o365beat installation and setup complete...
 echo ""
-echo "azure-o365 logs output port..'12224'🎯"
+echo "azure-o365 logs output port..12224🎯"
