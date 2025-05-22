@@ -1,5 +1,13 @@
 #!/bin/bash
+
 set -euo pipefail
+
+# Check if /opt/o365 already exists
+if [[ -d /opt/o365 ]]; then
+    echo "⚠️  Directory /opt/o365 already exists."
+    echo "❌ Aborting to avoid overwriting existing installation."
+    exit 1
+fi
 
 # Prompt for user input
 echo "🔐 Fill in the Azure O365 API keys:"
