@@ -1,16 +1,6 @@
 #!/bin/bash
 set -e  # Exit on any error
 
-echo "[+] Downloading o365beat..."
-wget -q --show-progress https://prod1-us.blusapphire.net/export/install/beat/o365beat.tar.gz
-
-echo "[+] Extracting o365beat..."
-tar -zxvf o365beat.tar.gz
-
-echo "[+] Moving o365beat to /opt/o365..."
-mv o365beat /opt/o365
-rm -rf o365beat.tar.gz
-
 echo "🔐 Fill the azure-o365-API Keys:"
 echo ""
 read -rp "Enter O365BEAT_TENANT_DOMAIN: " O365BEAT_TENANT_DOMAIN
@@ -33,6 +23,16 @@ if [[ "$CONFIRM" != [yY] ]]; then
     echo "Installation aborted."
     exit 1
 fi
+
+echo "[+] Downloading o365beat..."
+wget -q --show-progress https://prod1-us.blusapphire.net/export/install/beat/o365beat.tar.gz
+
+echo "[+] Extracting o365beat..."
+tar -zxvf o365beat.tar.gz
+
+echo "[+] Moving o365beat to /opt/o365..."
+mv o365beat /opt/o365
+rm -rf o365beat.tar.gz
 
 # Write configuration file
 echo "[+] Writing configuration to /opt/o365/blucluster.conf..."
