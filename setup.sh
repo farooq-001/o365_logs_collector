@@ -74,4 +74,6 @@ sudo systemctl daemon-reload
 sudo systemctl enable o365beat.service
 sudo systemctl start o365beat.service
 
-echo "✅ o365beat installation and setup complete...🎯"
+echo "✅ o365beat installation and setup complete...
+echo ""
+echo "azure-o365 logs output port..'12224'🎯"
