@@ -1,11 +1,12 @@
 #!/bin/bash
 
 echo "🔐 FILL THE O365 Audit-API KEYS:"
+echo ""
 
 # Prompt for required values
 read -p "Enter APPLICATION_ID: " APPLICATION_ID
-read -p "Enter TENANT_ID: " TENANT_ID
-read -p "Enter CLIENT_SECRET: " CLIENT_SECRET
+read -p "Enter TENANT_ID      : " TENANT_ID
+read -p "Enter CLIENT_SECRET  : " CLIENT_SECRET
 
 # Display inputs
 echo ""
@@ -22,8 +23,15 @@ if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     exit 1
 fi
 
+# Check Docker installation
+if ! command -v docker &>/dev/null; then
+    echo "❌ Docker is not installed. Please install Docker and try again."
+    exit 1
+fi
+
 # Create required directories
-mkdir -p /opt/docker/o365/registry
+mkdir -p /opt/docker/o365/registry/o365
+mkdir -p /opt/docker/o365/logs
 
 # Write Docker Compose file
 cat <<EOF > /opt/docker/o365/docker-compose.yml
@@ -70,7 +78,7 @@ filebeat.registry.path: /opt/docker/o365/registry/o365
 
 #========================= Filebeat Modules ===============================
 filebeat.config.modules:
-  path: "${path.config}/modules.d/*.yml"
+  path: "\${path.config}/modules.d/*.yml"
   reload.enabled: true
   reload.period: 60s
 
@@ -88,11 +96,6 @@ output.file:
   rotate_every_kb: 10000
   number_of_files: 7
 
-# Uncomment for Logstash output
-#output.logstash:
-#  hosts:
-#    - 127.0.0.1:12224
-
 #============================= Security Settings ============================
 seccomp:
   default_action: allow
@@ -102,5 +105,18 @@ seccomp:
         - rseq
 EOF
 
-echo "✅ Configuration completed. You can now start the container using:"
-echo "   sudo docker-compose -f /opt/docker/o365/docker-compose.yml up -d"
+# Set permissions (optional)
+chmod 644 /opt/docker/o365/docker-compose.yml /opt/docker/o365/o365audit.yaml
+
+echo ""
+echo "✅ Configuration completed."
+
+# Prompt to start container
+read -p "Start the container now? (y/n): " start_now
+if [[ "$start_now" =~ ^[Yy]$ ]]; then
+  docker-compose -f /opt/docker/o365/docker-compose.yml up -d
+  echo "🚀 Container started."
+else
+  echo "ℹ️ You can start the container later using:"
+  echo "   sudo docker-compose -f /opt/docker/o365/docker-compose.yml up -d"
+fi
