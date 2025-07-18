@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔐 FILL THE ONELOGIN-API KEYS:"
+echo "🔐 FILL THE O365 Audit-API KEYS:"
 
 # Prompt for required values
 read -p "Enter APPLICATION_ID: " APPLICATION_ID
@@ -9,7 +9,7 @@ read -p "Enter CLIENT_SECRET: " CLIENT_SECRET
 
 # Display inputs
 echo ""
-echo "🔐 You Have Entered The Following ONELOGIN-API Keys:"
+echo "🔐 You Have Entered The Following O365 Audit-API Keys:"
 echo "APPLICATION_ID : $APPLICATION_ID"
 echo "TENANT_ID      : $TENANT_ID"
 echo "CLIENT_SECRET  : $CLIENT_SECRET"
@@ -48,6 +48,7 @@ EOF
 cat <<EOF > /opt/docker/o365/o365audit.yaml
 ##################### Filebeat Configuration - O365 Audit #########################
 
+#======================= Filebeat Inputs =============================
 filebeat.inputs:
 - type: o365audit
   enabled: true
@@ -64,7 +65,14 @@ filebeat.inputs:
     - Audit.General
     - DLP.All
 
+#================== Filebeat Global Options ===============================
 filebeat.registry.path: /opt/docker/o365/registry/o365
+
+#========================= Filebeat Modules ===============================
+filebeat.config.modules:
+  path: "${path.config}/modules.d/*.yml"
+  reload.enabled: true
+  reload.period: 60s
 
 processors:
 - add_tags:
@@ -72,17 +80,20 @@ processors:
 - add_host_metadata:
     when.not.contains.tags: forwarded
 
+#========================= Output ===============================
 output.file:
   enabled: true
-  path: "/opt/docker/o365"
-  filename: "test.log"
+  path: "/opt/docker/o365/logs"
+  filename: "o365_audit.log"
   rotate_every_kb: 10000
   number_of_files: 7
 
+# Uncomment for Logstash output
 #output.logstash:
 #  hosts:
 #    - 127.0.0.1:12224
 
+#============================= Security Settings ============================
 seccomp:
   default_action: allow
   syscalls:
