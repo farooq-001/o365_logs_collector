@@ -95,6 +95,12 @@ output.file:
   filename: "o365_audit.log"
   rotate_every_kb: 10000
   number_of_files: 7
+  
+# Uncomment for Logstash output
+#output.logstash:
+#  hosts:
+#    - 127.0.0.1:12224
+
 
 #============================= Security Settings ============================
 seccomp:
