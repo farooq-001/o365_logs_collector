@@ -102,17 +102,18 @@ processors:
     when.not.contains.tags: forwarded
 
 #========================= Output ===============================
-output.file:
-  enabled: true
-  path: "/opt/docker/o365"
-  filename: "o365_audit.log"
-  rotate_every_kb: 10000
-  number_of_files: 7
+output.logstash:
+  hosts: ["127.0.0.1:12154"]
+  loadbalance: true
+  worker: 5
+  bulk_max_size: 8192
 
-# Uncomment for Logstash output
-#output.logstash:
-#  hosts:
-#    - 127.0.0.1:12224
+#output.file:
+#  enabled: true
+#  path: "/opt/docker/o365"
+#  filename: "o365_audit.log"
+#  rotate_every_kb: 10000
+#  number_of_files: 7
 
 #============================= Security Settings ============================
 seccomp:
