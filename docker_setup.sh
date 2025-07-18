@@ -30,8 +30,7 @@ if ! command -v docker &>/dev/null; then
 fi
 
 # Create required directories
-mkdir -p /opt/docker/o365/registry/o365
-mkdir -p /opt/docker/o365/logs
+mkdir -p /opt/docker/o365
 
 # Write Docker Compose file
 cat <<EOF > /opt/docker/o365/docker-compose.yml
