@@ -74,11 +74,11 @@ filebeat.inputs:
     - DLP.All
 
 #================== Filebeat Global Options ===============================
-filebeat.registry.path: /opt/docker/o365/registry/o365
+filebeat.registry.path: /opt/docker/o365/registry/o365_audit
 
 #========================= Filebeat Modules ===============================
 filebeat.config.modules:
-  path: "\${path.config}/modules.d/*.yml"
+  path: "${path.config}/modules.d/*.yml"
   reload.enabled: true
   reload.period: 60s
 
@@ -88,20 +88,18 @@ processors:
 - add_host_metadata:
     when.not.contains.tags: forwarded
 
-#========================= Output ===============================
-output.file:
-  enabled: true
-  path: "/opt/docker/o365/logs"
-  filename: "o365_audit.log"
-  rotate_every_kb: 10000
-  number_of_files: 7
-  
-# Uncomment for Logstash output
+#========================= Output ===============================  
 #output.logstash:
 #  hosts:
 #    - 127.0.0.1:12224
 
-
+output.file:
+  enabled: true
+  path: "/opt/docker/o365"
+  filename: "o365_audit.log"
+  rotate_every_kb: 10000
+  number_of_files: 7
+  
 #============================= Security Settings ============================
 seccomp:
   default_action: allow
