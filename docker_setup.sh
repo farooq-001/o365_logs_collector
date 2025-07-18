@@ -1,12 +1,11 @@
 #!/bin/bash
 
 echo "🔐 FILL THE O365 Audit-API KEYS:"
-echo ""
 
 # Prompt for required values
 read -p "Enter APPLICATION_ID: " APPLICATION_ID
-read -p "Enter TENANT_ID      : " TENANT_ID
-read -p "Enter CLIENT_SECRET  : " CLIENT_SECRET
+read -p "Enter TENANT_ID: " TENANT_ID
+read -p "Enter CLIENT_SECRET: " CLIENT_SECRET
 
 # Display inputs
 echo ""
@@ -23,14 +22,20 @@ if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     exit 1
 fi
 
-# Check Docker installation
-if ! command -v docker &>/dev/null; then
-    echo "❌ Docker is not installed. Please install Docker and try again."
+# Check for Docker
+if ! command -v docker &> /dev/null; then
+    echo "❌ Docker is not installed. Please install Docker before continuing."
+    exit 1
+fi
+
+# Check for Docker Compose
+if ! command -v docker-compose &> /dev/null; then
+    echo "❌ docker-compose is not installed. Please install it before continuing."
     exit 1
 fi
 
 # Create required directories
-mkdir -p /opt/docker/o365
+mkdir -p /opt/docker/o365/registry
 
 # Write Docker Compose file
 cat <<EOF > /opt/docker/o365/docker-compose.yml
@@ -62,9 +67,9 @@ filebeat.inputs:
   fields:
     log.type: o365_audit
   fields_under_root: true
-  application_id: ${APPLICATION_ID}
-  tenant_id: ${TENANT_ID}
-  client_secret: ${CLIENT_SECRET}
+  application_id: "$APPLICATION_ID"
+  tenant_id: "$TENANT_ID"
+  client_secret: "$CLIENT_SECRET"
   content_type:
     - Audit.AzureActiveDirectory
     - Audit.Exchange
@@ -73,11 +78,11 @@ filebeat.inputs:
     - DLP.All
 
 #================== Filebeat Global Options ===============================
-filebeat.registry.path: /opt/docker/o365/registry/o365_audit
+filebeat.registry.path: /opt/docker/o365/registry/o365
 
 #========================= Filebeat Modules ===============================
 filebeat.config.modules:
-  path: "${path.config}/modules.d/*.yml"
+  path: "\${path.config}/modules.d/*.yml"
   reload.enabled: true
   reload.period: 60s
 
@@ -87,18 +92,19 @@ processors:
 - add_host_metadata:
     when.not.contains.tags: forwarded
 
-#========================= Output ===============================  
-#output.logstash:
-#  hosts:
-#    - 127.0.0.1:12224
-
+#========================= Output ===============================
 output.file:
   enabled: true
   path: "/opt/docker/o365"
   filename: "o365_audit.log"
   rotate_every_kb: 10000
   number_of_files: 7
-  
+
+# Uncomment for Logstash output
+#output.logstash:
+#  hosts:
+#    - 127.0.0.1:12224
+
 #============================= Security Settings ============================
 seccomp:
   default_action: allow
@@ -108,18 +114,11 @@ seccomp:
         - rseq
 EOF
 
-# Set permissions (optional)
-chmod 644 /opt/docker/o365/docker-compose.yml /opt/docker/o365/o365audit.yaml
+# Secure the config file containing secrets
+chmod 600 /opt/docker/o365/o365audit.yaml
 
 echo ""
-echo "✅ Configuration completed."
+echo "✅ Configuration completed successfully."
+echo "🚀 You can now start the container using the following command:"
+echo "   sudo docker-compose -f /opt/docker/o365/docker-compose.yml up -d"
 
-# Prompt to start container
-read -p "Start the container now? (y/n): " start_now
-if [[ "$start_now" =~ ^[Yy]$ ]]; then
-  docker-compose -f /opt/docker/o365/docker-compose.yml up -d
-  echo "🚀 Container started."
-else
-  echo "ℹ️ You can start the container later using:"
-  echo "   sudo docker-compose -f /opt/docker/o365/docker-compose.yml up -d"
-fi
