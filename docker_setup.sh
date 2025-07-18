@@ -22,17 +22,26 @@ if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     exit 1
 fi
 
-# Check for Docker
-if ! command -v docker &> /dev/null; then
-    echo "❌ Docker is not installed. Please install Docker before continuing."
-    exit 1
+# Check if Docker is already installed
+if command -v docker &> /dev/null; then
+  echo "Docker is already installed. Version:"
+  docker --version
+else
+  echo "Docker is not installed. Proceeding with installation..."
 fi
 
-# Check for Docker Compose
-if ! command -v docker-compose &> /dev/null; then
-    echo "❌ docker-compose is not installed. Please install it before continuing."
-    exit 1
+# Check if Docker Compose is already installed
+if command -v docker-compose &> /dev/null || docker compose version &> /dev/null; then
+  echo "Docker Compose is already installed. Version:"
+  if command -v docker-compose &> /dev/null; then
+    docker-compose --version
+  else
+    docker compose version
+  fi
+else
+  echo "Docker Compose is not installed. Proceeding with installation..."
 fi
+
 
 # Create required directories
 mkdir -p /opt/docker/o365/registry
