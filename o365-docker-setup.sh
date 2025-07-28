@@ -56,7 +56,7 @@ services:
     container_name: o365audit
     network_mode: host
     volumes:
-      - /opt/docker:/opt/docker
+      - /opt/docker/o365/log:/opt/docker/o365/log
       - /opt/docker/o365/o365audit.yaml:/usr/share/filebeat/filebeat.yml
       - /opt/docker/o365/registry:/opt/docker/o365/registry
     environment:
@@ -102,18 +102,18 @@ processors:
     when.not.contains.tags: forwarded
 
 #========================= Output ===============================
-output.logstash:
-  hosts: ["127.0.0.1:12154"]
-  loadbalance: true
-  worker: 5
-  bulk_max_size: 8192
+#output.logstash:
+#  hosts: ["127.0.0.1:12154"]
+#  loadbalance: true
+#  worker: 5
+#  bulk_max_size: 8192
 
-#output.file:
-#  enabled: true
-#  path: "/opt/docker/o365"
-#  filename: "o365_audit.log"
-#  rotate_every_kb: 10000
-#  number_of_files: 7
+output.file:
+  enabled: true
+  path: "/opt/docker/o365/log"
+  filename: "o365_audit.log"
+  rotate_every_kb: 10000
+  number_of_files: 7
 
 #============================= Security Settings ============================
 seccomp:
