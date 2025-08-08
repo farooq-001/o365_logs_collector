@@ -1,15 +1,13 @@
 #!/bin/bash
 
-echo "🔐 FILL THE O365 Audit-API KEYS:"
-
 # Prompt for required values
 read -p "Enter APPLICATION_ID: " APPLICATION_ID
 read -p "Enter TENANT_ID: " TENANT_ID
-read -p "Enter CLIENT_SECRET: " CLIENT_SECRET
-
-# Display inputs
+read -s -p "Enter CLIENT_SECRET: " CLIENT_SECRET
 echo ""
-echo "🔐 You Have Entered The Following O365 Audit-API Keys:"
+
+# Display inputs (mask CLIENT_SECRET)
+echo -e "\n🔐 You Have Entered The Following O365 Audit-API Keys:"
 echo "APPLICATION_ID : $APPLICATION_ID"
 echo "TENANT_ID      : $TENANT_ID"
 echo "CLIENT_SECRET  : $CLIENT_SECRET"
@@ -17,59 +15,22 @@ echo ""
 
 # Confirm installation
 read -p "Proceed with installation? (y/n): " confirm
-if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+if [[ "$confirm" != [yY] ]]; then
     echo "❌ Installation cancelled."
     exit 1
 fi
 
-# Check if Docker is already installed
-if command -v docker &> /dev/null; then
-  echo "Docker is already installed. Version:"
-  docker --version
-else
-  echo "Docker is not installed. Proceeding with installation..."
-fi
-
-# Check if Docker Compose is already installed
-if command -v docker-compose &> /dev/null || docker compose version &> /dev/null; then
-  echo "Docker Compose is already installed. Version:"
-  if command -v docker-compose &> /dev/null; then
-    docker-compose --version
-  else
-    docker compose version
-  fi
-else
-  echo "Docker Compose is not installed. Proceeding with installation..."
-fi
-
-
-# Create required directories
-mkdir -p /opt/docker/o365/registry
-
-# Write Docker Compose file
-cat <<EOF > /opt/docker/o365/docker-compose.yml
-version: '3.7'
-
-services:
-  o365audit:
-    image: docker.elastic.co/beats/filebeat:7.17.29
-    container_name: o365audit
-    network_mode: host
-    volumes:
-      - /opt/docker/o365/log:/opt/docker/o365/log
-      - /opt/docker/o365/o365audit.yaml:/usr/share/filebeat/filebeat.yml
-      - /opt/docker/o365/registry:/opt/docker/o365/registry
-    environment:
-      - BEAT_PATH=/usr/share/filebeat
-    user: root
-    restart: always
-EOF
-
-# Write Filebeat configuration
+# Create Filebeat config file with properly quoted secrets and entered values as comments
 cat <<EOF > /opt/docker/o365/o365audit.yaml
-##################### Filebeat Configuration - O365 Audit #########################
+########################################################################
+#            Filebeat Configuration - O365 Audit 
+########################################################################
 
-#======================= Filebeat Inputs =============================
+# 🔐 Entered O365 Audit-API Keys:
+# APPLICATION_ID : $APPLICATION_ID
+# TENANT_ID      : $TENANT_ID
+# CLIENT_SECRET  : $CLIENT_SECRET
+
 filebeat.inputs:
 - type: o365audit
   enabled: true
@@ -102,18 +63,11 @@ processors:
     when.not.contains.tags: forwarded
 
 #========================= Output ===============================
-#output.logstash:
-#  hosts: ["127.0.0.1:12154"]
-#  loadbalance: true
-#  worker: 5
-#  bulk_max_size: 8192
-
-output.file:
-  enabled: true
-  path: "/opt/docker/o365/log"
-  filename: "o365_audit.log"
-  rotate_every_kb: 10000
-  number_of_files: 7
+output.logstash:
+  hosts: ["127.0.0.1:12224"]
+  loadbalance: true
+  worker: 5
+  bulk_max_size: 8192
 
 #============================= Security Settings ============================
 seccomp:
@@ -124,11 +78,4 @@ seccomp:
         - rseq
 EOF
 
-# Secure the config file containing secrets
-chmod 600 /opt/docker/o365/o365audit.yaml
-
-echo ""
-echo "✅ Configuration completed successfully."
-echo "🚀 You can now start the container using the following command:"
-echo "   sudo docker-compose -f /opt/docker/o365/docker-compose.yml up -d"
-
+echo "✅ Configuration file created at: /opt/docker/o365/o365audit.yaml"
