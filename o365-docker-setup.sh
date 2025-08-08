@@ -32,7 +32,7 @@ fi
 if ! command -v docker &>/dev/null || ! (command -v docker-compose &>/dev/null || docker compose version &>/dev/null); then
     read -p "Docker and/or Docker Compose not found. Install now? (y/n): " ans
     if [[ "$ans" =~ ^[Yy]$ ]]; then
-        curl -k -sS https://prod1-us.blusapphire.net/export/install/scripts/install-docker.sh | bash -
+        curl -sSL https://raw.githubusercontent.com/farooq-001/Docker-Install/master/docker-install-all.sh | bash
     else
         echo "❌ Docker is required. Aborting."
         exit 1
